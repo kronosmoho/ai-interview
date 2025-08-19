@@ -1,0 +1,50 @@
+import { FirebaseApp, getApp, getApps, initializeApp } from "firebase/app";
+import { connectAuthEmulator, getAuth } from "firebase/auth";
+import { connectFirestoreEmulator, getFirestore } from "firebase/firestore";
+import { connectStorageEmulator, getStorage } from "firebase/storage";
+
+let app: FirebaseApp | null = null;
+
+export function getFirebaseApp(): FirebaseApp {
+  if (app) return app;
+  if (!getApps().length) {
+    app = initializeApp({
+      apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+      authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+      storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+      messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+      appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+    });
+  } else {
+    app = getApp();
+  }
+  return app!;
+}
+
+export function getFirebaseAuth() {
+  const auth = getAuth(getFirebaseApp());
+  if (process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS === "true") {
+    try {
+      connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
+    } catch {}
+  }
+  return auth;
+}
+
+export function getFirebaseDb() {
+  const db = getFirestore(getFirebaseApp());
+  if (process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS === "true") {
+      try { connectFirestoreEmulator(db, "127.0.0.1", 8080); } catch {}
+  }
+  return db;
+}
+
+export function getFirebaseStorage() {
+  const storage = getStorage(getFirebaseApp());
+  if (process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS === "true") {
+      try { connectStorageEmulator(storage, "127.0.0.1", 9199); } catch {}
+  }
+  return storage;
+}
+
